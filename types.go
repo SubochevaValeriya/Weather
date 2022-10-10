@@ -13,3 +13,7 @@ type Weather struct {
 	Temperature int       `json:"temperature" db:"temperature"`
 	Date        time.Time `json:"date" db:"date"`
 }
+
+type City struct {
+	City string `json:"name" db:"city"`
+}
