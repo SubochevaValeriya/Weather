@@ -39,8 +39,8 @@ definitions:
 host: localhost:8000
 info:
   contact: {}
-  description: API Server for Weather Application
-  title: Weather App API
+  description: API Server for weather-app Application
+  title: weather-app App API
   version: "1.0"
 paths:
   /weather:
