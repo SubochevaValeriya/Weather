@@ -14,6 +14,6 @@ RUN chmod +x wait-for-postgres.sh
 
 # build go app
 RUN go mod download
-RUN go build -o balances-app ./cmd/main.go
+RUN go build -o weather-app ./cmd/main.go
 
 CMD ["./weather-app"]
