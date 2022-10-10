@@ -2,10 +2,10 @@ package main
 
 import (
 	"context"
-	balance "github.com/SubochevaValeriya/microservice-balance"
-	"github.com/SubochevaValeriya/microservice-balance/internal/handler"
-	"github.com/SubochevaValeriya/microservice-balance/internal/repository"
-	"github.com/SubochevaValeriya/microservice-balance/internal/service"
+	weather "github.com/SubochevaValeriya/microservice-weather"
+	"github.com/SubochevaValeriya/microservice-weather/internal/handler"
+	"github.com/SubochevaValeriya/microservice-weather/internal/repository"
+	"github.com/SubochevaValeriya/microservice-weather/internal/service"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"github.com/sirupsen/logrus"
@@ -35,7 +35,7 @@ func main() {
 		logrus.Fatalf("error loading env variables: %s", err.Error())
 	}
 
-	//sudo docker run --name=balance -e POSTGRES_PASSWORD='qwerty' -p 5432:5432 -d --rm postgres
+	//sudo docker run --name=weather -e POSTGRES_PASSWORD='qwerty' -p 5432:5432 -d --rm postgres
 	// migrate -path ./schema -database 'postgres://postgres:qwerty@localhost:5432/postgres?sslmode=disable' up
 	db, err := repository.NewPostgresDB(repository.Config{
 		Host:     os.Getenv("host"),
@@ -53,7 +53,7 @@ func main() {
 	repos := repository.NewRepository(db)
 	services := service.NewService(repos)
 	handlers := handler.NewHandler(services)
-	srv := new(balance.Server)
+	srv := new(weather.Server)
 
 	go periodicallyCheckTemperature(repos, services, viper.GetInt("periodicity"))
 	go moveOldDataToArchive(repos, viper.GetInt("cntDayArchive"))

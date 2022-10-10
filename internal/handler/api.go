@@ -1,15 +1,27 @@
 package handler
 
 import (
-	weather "github.com/SubochevaValeriya/microservice-balance"
+	weather "github.com/SubochevaValeriya/microservice-weather"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
+// @Summary Add City
+// @Tags weather
+// @Description add city to the subscription
+// @ID add-city
+// @Accept  json
+// @Produce  json
+// @Param input body weather.City true "city name"
+// @Success 200 {object} cityResponse
+// @Failure 400,404 {object} errorResponse
+// @Failure 500 {object} errorResponse
+// @Failure default {object} errorResponse
+// @Router /weather [post]
 // addCity is made for adding city to the subscription
 // It's CREATE in CRUD
 func (h *Handler) addCity(c *gin.Context) {
-	var input weather.Subscription
+	var input weather.City
 
 	if err := c.BindJSON(&input); err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
@@ -22,8 +34,8 @@ func (h *Handler) addCity(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, map[string]string{
-		"city": input.City,
+	c.JSON(http.StatusOK, cityResponse{
+		City: input.City,
 	})
 
 	newSuccessResponse("adding city", input.City)
@@ -33,6 +45,17 @@ type getSubscriptionListResponse struct {
 	Data []weather.Subscription `json:"data"`
 }
 
+// @Summary Get Subscription List
+// @Tags weather
+// @Description get list of cities in subscription
+// @ID get-subscription-list
+// @Accept  json
+// @Produce  json
+// @Success 200 {object} getSubscriptionListResponse
+// @Failure 400,404 {object} errorResponse
+// @Failure 500 {object} errorResponse
+// @Failure default {object} errorResponse
+// @Router /weather [get]
 // getSubscriptionList is used to get list of cities in subscription
 // It's READ from CRUD
 func (h *Handler) getSubscriptionList(c *gin.Context) {
@@ -50,6 +73,18 @@ func (h *Handler) getSubscriptionList(c *gin.Context) {
 	newSuccessResponse("getting subscription list", "")
 }
 
+// @Summary Get Avg Temperature By City
+// @Tags weather
+// @Description get average temperature in city
+// @ID get-avg-temp-by-city
+// @Accept  json
+// @Produce  json
+// @Param city path string true "city name"
+// @Success 200 {integer} integer
+// @Failure 400,404 {object} errorResponse
+// @Failure 500 {object} errorResponse
+// @Failure default {object} errorResponse
+// @Router /weather/{city} [get]
 // getAvgTempByCity allows to get average temperature in city
 // It's READ from CRUD
 func (h *Handler) getAvgTempByCity(c *gin.Context) {
@@ -65,6 +100,18 @@ func (h *Handler) getAvgTempByCity(c *gin.Context) {
 	newSuccessResponse("getting average temperature", city)
 }
 
+// @Summary Delete City
+// @Tags weather
+// @Description delete city from the subscription
+// @ID delete-city
+// @Accept  json
+// @Produce  json
+// @Param city path string true "city name"
+// @Success 200 {object} statusResponse
+// @Failure 400,404 {object} errorResponse
+// @Failure 500 {object} errorResponse
+// @Failure default {object} errorResponse
+// @Router /weather/{city} [delete]
 // deleteCity allows to delete city from the subscription
 // It's DELETE from CRUD
 func (h *Handler) deleteCity(c *gin.Context) {
@@ -85,27 +132,4 @@ func (h *Handler) deleteCity(c *gin.Context) {
 	})
 
 	newSuccessResponse("delete city", city)
-}
-
-// addWeather is made for adding weather's information
-// It's CREATE in CRUD
-func (h *Handler) addWeather(c *gin.Context) {
-	var input weather.Subscription
-
-	if err := c.BindJSON(&input); err != nil {
-		newErrorResponse(c, http.StatusBadRequest, err.Error())
-		return
-	}
-
-	err := h.services.Weather.AddCity(input.City)
-	if err != nil {
-		newErrorResponse(c, http.StatusInternalServerError, err.Error())
-		return
-	}
-
-	c.JSON(http.StatusOK, map[string]string{
-		"city": input.City,
-	})
-
-	newSuccessResponse("adding weather", input.City)
 }
