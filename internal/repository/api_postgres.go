@@ -107,10 +107,15 @@ func (r *ApiPostgres) GetAvgTempByCityId(id int) (float64, error) {
 }
 
 func (r *ApiPostgres) MoveOldDataToArchive(dateForDelete time.Time) error {
+	tx, err := r.db.Beginx()
+	if err != nil {
+		return err
+	}
 	moveOldDataToArchiveQuery := fmt.Sprintf("WITH moved_rows AS (DELETE FROM %s WHERE (weather_date) <= $1 RETURNING *) INSERT INTO %s SELECT * FROM moved_rows", weathersTable, weathersTableArchive)
 	if _, err := r.db.Exec(moveOldDataToArchiveQuery, dateForDelete); err != nil {
+		tx.Rollback()
 		return err
 	}
 
-	return nil
+	return tx.Commit()
 }
