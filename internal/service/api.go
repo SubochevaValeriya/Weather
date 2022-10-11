@@ -4,6 +4,7 @@ import (
 	"github.com/SubochevaValeriya/microservice-weather"
 	"github.com/SubochevaValeriya/microservice-weather/internal/repository"
 	"github.com/SubochevaValeriya/microservice-weather/internal/service/openWeatherApi"
+	"time"
 )
 
 type ApiService struct {
@@ -20,7 +21,7 @@ func (s *ApiService) AddCity(city string) error {
 		return err
 	}
 
-	if err := s.repo.AddCity(city); err != nil {
+	if err := s.repo.AddCity(city, time.Now()); err != nil {
 		return err
 	}
 

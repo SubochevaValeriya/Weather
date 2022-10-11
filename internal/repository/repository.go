@@ -3,10 +3,11 @@ package repository
 import (
 	weather "github.com/SubochevaValeriya/microservice-weather"
 	"github.com/jmoiron/sqlx"
+	"time"
 )
 
 type Weather interface {
-	AddCity(city string) error
+	AddCity(city string, time time.Time) error
 	GetSubscriptionList() ([]weather.Subscription, error)
 	AddWeatherByCityId(id int, temperature int) error
 	MoveOldDataToArchive() error

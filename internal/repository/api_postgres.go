@@ -16,14 +16,14 @@ func NewApiPostgres(db *sqlx.DB) *ApiPostgres {
 	return &ApiPostgres{db: db}
 }
 
-func (r *ApiPostgres) AddCity(city string) error {
+func (r *ApiPostgres) AddCity(city string, time time.Time) error {
 	tx, err := r.db.Beginx()
 	if err != nil {
 		return err
 	}
 
 	addToSubscription := fmt.Sprintf("INSERT INTO %s (city, subscription_date) values ($1, $2)", subscriptionTable)
-	_, err = tx.Exec(addToSubscription, city, time.Now())
+	_, err = tx.Exec(addToSubscription, city, time)
 	if err != nil {
 		tx.Rollback()
 		return err
