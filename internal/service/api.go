@@ -59,7 +59,6 @@ func (s *ApiService) DeleteCity(city string) error {
 }
 
 func (s *ApiService) AddWeather(city string) error {
-
 	temperature, err := s.openWeather.CurrentTemperature(city)
 	if err != nil {
 		return err

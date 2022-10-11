@@ -91,13 +91,14 @@ func (r *ApiPostgres) GetCityId(city string) (int, error) {
 
 func (r *ApiPostgres) GetAvgTempByCityId(id int) (float64, error) {
 	var avgTemp float64
-
 	getAvgTemp := fmt.Sprintf("SELECT AVG(weather) FROM %s WHERE city_id=$1", weathersTable)
+
 	var avgTempUint8 []uint8
 	err := r.db.Get(&avgTempUint8, getAvgTemp, id)
 	if err != nil {
 		return avgTemp, err
 	}
+
 	avgTemp, err = strconv.ParseFloat(string(avgTempUint8), 64)
 	if err != nil {
 		return avgTemp, err
