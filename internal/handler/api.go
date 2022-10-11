@@ -132,5 +132,5 @@ func (h *Handler) deleteCity(c *gin.Context) {
 }
 
 func uppercaseFirstLetter(word string) string {
-	return strings.Title(strings.ToLower(word))
+	return strings.TrimSpace(strings.Title(strings.ToLower(word)))
 }
