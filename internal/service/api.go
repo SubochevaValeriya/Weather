@@ -1,25 +1,31 @@
 package service
 
 import (
-	"github.com/SubochevaValeriya/microservice-balance"
-	"github.com/SubochevaValeriya/microservice-balance/internal/repository"
+	"github.com/SubochevaValeriya/microservice-weather"
+	"github.com/SubochevaValeriya/microservice-weather/internal/repository"
+	"github.com/SubochevaValeriya/microservice-weather/internal/service/openWeatherApi"
 )
 
 type ApiService struct {
-	repo repository.Balance
+	repo        repository.Weather
+	openWeather openWeatherApi.Weather
 }
 
-func newApiService(repo repository.Balance) *ApiService {
-	return &ApiService{repo: repo}
+func newApiService(repo repository.Weather, openWeather openWeatherApi.Weather) *ApiService {
+	return &ApiService{repo: repo, openWeather: openWeather}
 }
 
 func (s *ApiService) AddCity(city string) error {
-
-	if _, err := CurrentTemperature(city); err != nil {
+	if _, err := s.openWeather.CurrentTemperature(city); err != nil {
 		return err
 	}
 
-	return s.repo.AddCity(city)
+	if err := s.repo.AddCity(city); err != nil {
+		return err
+	}
+
+	// add current temperature when adding city
+	return s.AddWeather(city)
 }
 
 func (s *ApiService) GetSubscriptionList() ([]weather.Subscription, error) {
@@ -27,8 +33,8 @@ func (s *ApiService) GetSubscriptionList() ([]weather.Subscription, error) {
 	return s.repo.GetSubscriptionList()
 }
 
-func (s *ApiService) GetAvgTempByCity(city string) (int, error) {
-	if _, err := CurrentTemperature(city); err != nil {
+func (s *ApiService) GetAvgTempByCity(city string) (float64, error) {
+	if _, err := s.openWeather.CurrentTemperature(city); err != nil {
 		return 0, err
 	}
 
@@ -36,7 +42,7 @@ func (s *ApiService) GetAvgTempByCity(city string) (int, error) {
 }
 
 func (s *ApiService) DeleteCity(city string) error {
-	if _, err := CurrentTemperature(city); err != nil {
+	if _, err := s.openWeather.CurrentTemperature(city); err != nil {
 		return err
 	}
 
@@ -45,7 +51,7 @@ func (s *ApiService) DeleteCity(city string) error {
 
 func (s *ApiService) AddWeather(city string) error {
 
-	temperature, err := CurrentTemperature(city)
+	temperature, err := s.openWeather.CurrentTemperature(city)
 	if err != nil {
 		return err
 	}

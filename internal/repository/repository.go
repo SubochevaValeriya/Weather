@@ -1,20 +1,21 @@
 package repository
 
 import (
-	"github.com/SubochevaValeriya/microservice-balance"
+	weather "github.com/SubochevaValeriya/microservice-weather"
 	"github.com/jmoiron/sqlx"
 )
 
-type Balance interface {
+type Weather interface {
 	AddCity(city string) error
 	GetSubscriptionList() ([]weather.Subscription, error)
-	GetAvgTempByCity(city string) (int, error)
+	GetAvgTempByCity(city string) (float64, error)
 	DeleteCity(city string) error
 	AddWeather(city string, temperature int) error
+	MoveOldDataToArchive() error
 }
 
 type Repository struct {
-	Balance
+	Weather
 }
 
 func NewRepository(db *sqlx.DB) *Repository {

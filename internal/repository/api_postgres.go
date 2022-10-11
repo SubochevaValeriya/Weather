@@ -2,8 +2,9 @@ package repository
 
 import (
 	"fmt"
-	"github.com/SubochevaValeriya/microservice-balance"
+	"github.com/SubochevaValeriya/microservice-weather"
 	"github.com/jmoiron/sqlx"
+	"strconv"
 	"time"
 )
 
@@ -28,13 +29,6 @@ func (r *ApiPostgres) AddCity(city string) error {
 		return err
 	}
 
-	//addTransactionQuery := fmt.Sprintf("INSERT INTO %s (user_id, amount, reason, transaction_date, transfer_id) values ($1, $2, $3, $4, $5)", weathersTable)
-	//_, err = tx.Exec(addTransactionQuery, id, user.Balance, ReasonOpening, time.Now(), id)
-	//if err != nil {
-	//	tx.Rollback()
-	//	return 0, err
-	//}
-
 	return tx.Commit()
 }
 
@@ -47,31 +41,35 @@ func (r *ApiPostgres) GetSubscriptionList() ([]weather.Subscription, error) {
 	return subscription, err
 }
 
-func (r *ApiPostgres) GetAvgTempByCity(city string) (int, error) {
-	var avgTemp int
-	getAvgTemp := fmt.Sprintf("SELECT AVG(weather) FROM %s WHERE city=$1", weathersTable)
-	err := r.db.Get(&avgTemp, getAvgTemp, city)
+func (r *ApiPostgres) GetAvgTempByCity(city string) (float64, error) {
+	var avgTemp float64
+	id, err := r.GetCityId(city)
 	if err != nil {
 		return avgTemp, err
 	}
 
-	return avgTemp, nil
+	return r.GetAvgTempByCityId(id)
 }
 
 func (r *ApiPostgres) DeleteCity(city string) error {
+	id, err := r.GetCityId(city)
+	if err != nil {
+		return err
+	}
+
 	tx, err := r.db.Beginx()
 	if err != nil {
 		return err
 	}
 
-	deleteTransactionsQuery := fmt.Sprintf("DELETE FROM %s WHERE city = $1", weathersTable)
-	if _, err := r.db.Exec(deleteTransactionsQuery, city); err != nil {
+	deleteTransactionsQuery := fmt.Sprintf("DELETE FROM %s WHERE city_id = $1", weathersTable)
+	if _, err := r.db.Exec(deleteTransactionsQuery, id); err != nil {
 		tx.Rollback()
 		return err
 	}
 
-	deleteBalanceQuery := fmt.Sprintf("DELETE FROM %s WHERE city = $1", subscriptionTable)
-	_, err = tx.Exec(deleteBalanceQuery, city)
+	deleteBalanceQuery := fmt.Sprintf("DELETE FROM %s WHERE id = $1", subscriptionTable)
+	_, err = tx.Exec(deleteBalanceQuery, id)
 	if err != nil {
 		tx.Rollback()
 		return err
@@ -81,17 +79,57 @@ func (r *ApiPostgres) DeleteCity(city string) error {
 }
 
 func (r *ApiPostgres) AddWeather(city string, temperature int) error {
+	id, err := r.GetCityId(city)
+	if err != nil {
+		return err
+	}
 	tx, err := r.db.Beginx()
 	if err != nil {
 		return err
 	}
-
-	addWeather := fmt.Sprintf("INSERT INTO %s (city, weather_date, weather) values ($1, $2, $3) RETURNING id", weathersTable)
-	_, err = tx.Exec(addWeather, city, time.Now(), temperature)
+	addWeather := fmt.Sprintf("INSERT INTO %s (city_id, weather_date, weather) values ($1, $2, $3)", weathersTable)
+	_, err = tx.Exec(addWeather, id, time.Now(), temperature)
 	if err != nil {
 		tx.Rollback()
 		return err
 	}
 
 	return tx.Commit()
+}
+
+func (r *ApiPostgres) GetCityId(city string) (int, error) {
+	var id int
+	getCityIdQuery := fmt.Sprintf("SELECT id from %s WHERE city=$1", subscriptionTable)
+	err := r.db.Get(&id, getCityIdQuery, city)
+	if err != nil {
+		return id, err
+	}
+
+	return id, nil
+}
+
+func (r *ApiPostgres) GetAvgTempByCityId(id int) (float64, error) {
+	var avgTemp float64
+
+	getAvgTemp := fmt.Sprintf("SELECT AVG(weather) FROM %s WHERE city_id=$1", weathersTable)
+	var avgTempUint8 []uint8
+	err := r.db.Get(&avgTempUint8, getAvgTemp, id)
+	if err != nil {
+		return avgTemp, err
+	}
+	avgTemp, err = strconv.ParseFloat(string(avgTempUint8), 64)
+	if err != nil {
+		return avgTemp, err
+	}
+	return avgTemp, nil
+}
+
+func (r *ApiPostgres) MoveOldDataToArchive() error {
+	dateForDelete := time.Now()
+	moveOldDataToArchiveQuery := fmt.Sprintf("WITH moved_rows AS (DELETE FROM %s WHERE (weather_date) <= $1 RETURNING *) INSERT INTO %s SELECT * FROM moved_rows", weathersTable, weathersTableArchive)
+	if _, err := r.db.Exec(moveOldDataToArchiveQuery, dateForDelete); err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -6,15 +6,14 @@ import (
 	"github.com/SubochevaValeriya/microservice-weather/internal/handler"
 	"github.com/SubochevaValeriya/microservice-weather/internal/repository"
 	"github.com/SubochevaValeriya/microservice-weather/internal/service"
+	"github.com/SubochevaValeriya/microservice-weather/internal/service/openWeatherApi"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"os"
 	"os/signal"
-	"sync"
 	"syscall"
-	"time"
 )
 
 // @title Weather App API
@@ -49,14 +48,21 @@ func main() {
 		logrus.Fatalf("failed to inititalize db: %s", err.Error())
 	}
 
+	openWeather, err := openWeatherApi.NewOpenWeatherApiConnection(openWeatherApi.Config{
+		Unit:  viper.GetString("openWeatherMap.unit"),
+		Lang:  viper.GetString("openWeatherMap.lang"),
+		Token: os.Getenv("OWM_API_KEY"),
+	})
+
 	// dependency injection
 	repos := repository.NewRepository(db)
-	services := service.NewService(repos)
+	openWeatherAPI := openWeatherApi.NewOpenWeather(openWeather)
+	services := service.NewService(repos, openWeatherAPI)
 	handlers := handler.NewHandler(services)
 	srv := new(weather.Server)
 
-	go periodicallyCheckTemperature(repos, services, viper.GetInt("periodicity"))
-	go moveOldDataToArchive(repos, viper.GetInt("cntDayArchive"))
+	go service.PeriodicallyCheckTemperature(repos, services, viper.GetInt("periodicity"))
+	go service.MoveOldDataToArchive(repos, viper.GetInt("cntDayArchive"))
 
 	go func() {
 		if err := srv.Run(viper.GetString("port"), handlers.InitRoutes()); err != nil {
@@ -86,38 +92,4 @@ func initConfig() error {
 	viper.AddConfigPath("configs")
 	viper.SetConfigName("config")
 	return viper.ReadInConfig()
-}
-
-// periodically checking temperature in chosen cities
-func periodicallyCheckTemperature(repos *repository.Repository, services *service.Service, periodicity int) {
-	wg := sync.WaitGroup{}
-	wg.Add(1)
-	for range time.Tick(timeDurations(periodicity)) {
-		subscriptionList, err := repos.GetSubscriptionList()
-		if err != nil {
-			return
-		}
-		wg2 := sync.WaitGroup{}
-		wg2.Add(len(subscriptionList))
-		for i := range subscriptionList {
-			go services.AddWeather(subscriptionList[i].City)
-			wg2.Done()
-		}
-		wg2.Wait()
-	}
-	wg.Wait()
-}
-
-// moves old data to archive table
-func moveOldDataToArchive(repos *repository.Repository, cntDayArchive int) {
-	wg := sync.WaitGroup{}
-	wg.Add(1)
-	for range time.Tick(timeDurations(cntDayArchive / 1440)) {
-		repos.MoveOldDataToArchive(cntDayArchive)
-	}
-	wg.Wait()
-}
-
-func timeDurations(minutes int) time.Duration {
-	return time.Duration(minutes * 1e9 * 60)
 }
