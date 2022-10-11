@@ -4,6 +4,7 @@ import (
 	weather "github.com/SubochevaValeriya/microservice-weather"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"strings"
 )
 
 // @Summary Add City
@@ -28,14 +29,14 @@ func (h *Handler) addCity(c *gin.Context) {
 		return
 	}
 
-	err := h.services.Weather.AddCity(input.City)
+	err := h.services.Weather.AddCity(uppercaseFirstLetter(input.City))
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	c.JSON(http.StatusOK, cityResponse{
-		City: input.City,
+		City: uppercaseFirstLetter(input.City),
 	})
 
 	newSuccessResponse("adding city", input.City)
@@ -88,7 +89,7 @@ func (h *Handler) getSubscriptionList(c *gin.Context) {
 // getAvgTempByCity allows to get average temperature in city
 // It's READ from CRUD
 func (h *Handler) getAvgTempByCity(c *gin.Context) {
-	city := c.Param("city")
+	city := uppercaseFirstLetter(c.Param("city"))
 
 	temp, err := h.services.Weather.GetAvgTempByCity(city)
 	if err != nil {
@@ -115,11 +116,7 @@ func (h *Handler) getAvgTempByCity(c *gin.Context) {
 // deleteCity allows to delete city from the subscription
 // It's DELETE from CRUD
 func (h *Handler) deleteCity(c *gin.Context) {
-	city := c.Param("city")
-	//if err != nil {
-	//	newErrorResponse(c, http.StatusBadRequest, "invalid id param")
-	//	return
-	//}
+	city := uppercaseFirstLetter(c.Param("city"))
 
 	err := h.services.Weather.DeleteCity(city)
 	if err != nil {
@@ -132,4 +129,8 @@ func (h *Handler) deleteCity(c *gin.Context) {
 	})
 
 	newSuccessResponse("delete city", city)
+}
+
+func uppercaseFirstLetter(word string) string {
+	return strings.Title(strings.ToLower(word))
 }
