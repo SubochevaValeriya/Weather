@@ -106,8 +106,7 @@ func (r *ApiPostgres) GetAvgTempByCityId(id int) (float64, error) {
 	return avgTemp, nil
 }
 
-func (r *ApiPostgres) MoveOldDataToArchive() error {
-	dateForDelete := time.Now()
+func (r *ApiPostgres) MoveOldDataToArchive(dateForDelete time.Time) error {
 	moveOldDataToArchiveQuery := fmt.Sprintf("WITH moved_rows AS (DELETE FROM %s WHERE (weather_date) <= $1 RETURNING *) INSERT INTO %s SELECT * FROM moved_rows", weathersTable, weathersTableArchive)
 	if _, err := r.db.Exec(moveOldDataToArchiveQuery, dateForDelete); err != nil {
 		return err

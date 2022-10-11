@@ -10,7 +10,7 @@ type Weather interface {
 	AddCity(city string, time time.Time) error
 	GetSubscriptionList() ([]weather.Subscription, error)
 	AddWeatherByCityId(id int, date time.Time, temperature int) error
-	MoveOldDataToArchive() error
+	MoveOldDataToArchive(dateForDelete time.Time) error
 	GetAvgTempByCityId(id int) (float64, error)
 	GetCityId(city string) (int, error)
 	DeleteCityById(id int) error

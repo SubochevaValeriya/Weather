@@ -42,7 +42,7 @@ func MoveOldDataToArchive(repos *repository.Repository, cntDayArchive int) {
 	wg := sync.WaitGroup{}
 	wg.Add(1)
 	for range time.Tick(period) {
-		repos.MoveOldDataToArchive()
+		repos.MoveOldDataToArchive(time.Now())
 		logrus.Printf("Old data is archived")
 	}
 	wg.Wait()
