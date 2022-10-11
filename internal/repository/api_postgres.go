@@ -16,14 +16,14 @@ func NewApiPostgres(db *sqlx.DB) *ApiPostgres {
 	return &ApiPostgres{db: db}
 }
 
-func (r *ApiPostgres) AddCity(city string, time time.Time) error {
+func (r *ApiPostgres) AddCity(city string, date time.Time) error {
 	tx, err := r.db.Beginx()
 	if err != nil {
 		return err
 	}
 
 	addToSubscription := fmt.Sprintf("INSERT INTO %s (city, subscription_date) values ($1, $2)", subscriptionTable)
-	_, err = tx.Exec(addToSubscription, city, time)
+	_, err = tx.Exec(addToSubscription, city, date)
 	if err != nil {
 		tx.Rollback()
 		return err
@@ -41,13 +41,13 @@ func (r *ApiPostgres) GetSubscriptionList() ([]weather.Subscription, error) {
 	return subscription, err
 }
 
-func (r *ApiPostgres) AddWeatherByCityId(id int, temperature int) error {
+func (r *ApiPostgres) AddWeatherByCityId(id int, date time.Time, temperature int) error {
 	tx, err := r.db.Beginx()
 	if err != nil {
 		return err
 	}
 	addWeather := fmt.Sprintf("INSERT INTO %s (city_id, weather_date, weather) values ($1, $2, $3)", weathersTable)
-	_, err = tx.Exec(addWeather, id, time.Now(), temperature)
+	_, err = tx.Exec(addWeather, id, date, temperature)
 	if err != nil {
 		tx.Rollback()
 		return err

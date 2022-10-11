@@ -70,5 +70,5 @@ func (s *ApiService) AddWeather(city string) error {
 		return err
 	}
 
-	return s.repo.AddWeatherByCityId(id, temperature)
+	return s.repo.AddWeatherByCityId(id, time.Now(), temperature)
 }
