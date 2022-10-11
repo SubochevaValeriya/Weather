@@ -1,0 +1,191 @@
+basePath: /
+definitions:
+  handler.cityResponse:
+    properties:
+      city:
+        type: string
+    type: object
+  handler.errorResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  handler.getSubscriptionListResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/weather.Subscription'
+        type: array
+    type: object
+  handler.statusResponse:
+    properties:
+      status:
+        type: string
+    type: object
+  weather.City:
+    properties:
+      name:
+        type: string
+    type: object
+  weather.Subscription:
+    properties:
+      city:
+        type: string
+      id:
+        type: integer
+      subscription_date:
+        type: string
+    type: object
+host: localhost:8000
+info:
+  contact: {}
+  description: API Server for Weather Application
+  title: Weather App API
+  version: "1.0"
+paths:
+  /weather:
+    get:
+      consumes:
+      - application/json
+      description: get list of cities in subscription
+      operationId: get-subscription-list
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.getSubscriptionListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      summary: Get Subscription List
+      tags:
+      - weather
+    post:
+      consumes:
+      - application/json
+      description: add city to the subscription
+      operationId: add-city
+      parameters:
+      - description: city name
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/weather.City'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.cityResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      summary: Add City
+      tags:
+      - weather
+  /weather/{city}:
+    delete:
+      consumes:
+      - application/json
+      description: delete city from the subscription
+      operationId: delete-city
+      parameters:
+      - description: city name
+        in: path
+        name: city
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.statusResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      summary: Delete City
+      tags:
+      - weather
+    get:
+      consumes:
+      - application/json
+      description: get average temperature in city
+      operationId: get-avg-temp-by-city
+      parameters:
+      - description: city name
+        in: path
+        name: city
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: integer
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      summary: Get Avg Temperature By City
+      tags:
+      - weather
+swagger: "2.0"
