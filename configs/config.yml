@@ -8,7 +8,7 @@ db:
   sslmode: "disable"
 
 cntDayArchive: 3
-periodicity: 1
+periodicity: 600
 
 openWeatherMap:
   unit: "C"
