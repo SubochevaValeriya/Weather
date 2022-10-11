@@ -37,8 +37,12 @@ func (s *ApiService) GetAvgTempByCity(city string) (float64, error) {
 	if _, err := s.openWeather.CurrentTemperature(city); err != nil {
 		return 0, err
 	}
+	id, err := s.repo.GetCityId(city)
+	if err != nil {
+		return 0.0, err
+	}
 
-	return s.repo.GetAvgTempByCity(city)
+	return s.repo.GetAvgTempByCityId(id)
 }
 
 func (s *ApiService) DeleteCity(city string) error {
@@ -46,7 +50,12 @@ func (s *ApiService) DeleteCity(city string) error {
 		return err
 	}
 
-	return s.repo.DeleteCity(city)
+	id, err := s.repo.GetCityId(city)
+	if err != nil {
+		return err
+	}
+
+	return s.repo.DeleteCityById(id)
 }
 
 func (s *ApiService) AddWeather(city string) error {
@@ -56,5 +65,10 @@ func (s *ApiService) AddWeather(city string) error {
 		return err
 	}
 
-	return s.repo.AddWeather(city, temperature)
+	id, err := s.repo.GetCityId(city)
+	if err != nil {
+		return err
+	}
+
+	return s.repo.AddWeatherByCityId(id, temperature)
 }

@@ -8,10 +8,11 @@ import (
 type Weather interface {
 	AddCity(city string) error
 	GetSubscriptionList() ([]weather.Subscription, error)
-	GetAvgTempByCity(city string) (float64, error)
-	DeleteCity(city string) error
-	AddWeather(city string, temperature int) error
+	AddWeatherByCityId(id int, temperature int) error
 	MoveOldDataToArchive() error
+	GetAvgTempByCityId(id int) (float64, error)
+	GetCityId(city string) (int, error)
+	DeleteCityById(id int) error
 }
 
 type Repository struct {
