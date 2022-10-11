@@ -12,7 +12,7 @@ If you are running the application for the first time, you must apply the migrat
 make migrate
 ```
 
-Create swagger doc:
+Create swagger documentation:
 
 ```
 make swag
