@@ -57,7 +57,7 @@ func TestCurrentTemperature(t *testing.T) {
 		w.CurrentTemperature(city.query)
 
 		if c.Name != city.weather.Name {
-			t.Errorf("Excpect City %s, got %s", city.weather.Name, c.Name)
+			t.Errorf("Expect City %s, got %s", city.weather.Name, c.Name)
 		}
 		fmt.Println(err)
 	}
