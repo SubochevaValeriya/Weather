@@ -34,7 +34,7 @@ func (s *ApiService) GetSubscriptionList() ([]weather.Subscription, error) {
 	return s.repo.GetSubscriptionList()
 }
 
-func (s *ApiService) GetAvgTempByCity(city string) (float64, error) {
+func (s *ApiService) GetAvgTempByCity(city string) (int, error) {
 	if _, err := s.openWeather.CurrentTemperature(city); err != nil {
 		return 0, err
 	}
@@ -43,7 +43,11 @@ func (s *ApiService) GetAvgTempByCity(city string) (float64, error) {
 		return 0.0, err
 	}
 
-	return s.repo.GetAvgTempByCityId(id)
+	avgTemp, err := s.repo.GetAvgTempByCityId(id)
+	if err != nil {
+		return 0, err
+	}
+	return int(avgTemp), err
 }
 
 func (s *ApiService) DeleteCity(city string) error {
