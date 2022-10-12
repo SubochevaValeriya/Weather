@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-var randomDate = time.Date(2022, 10, 11, 0, 0, 0, 0, time.UTC)
+var RandomDate = time.Date(2022, 10, 11, 0, 0, 0, 0, time.UTC)
 
 func TestAddCity(t *testing.T) {
 	db, mock, err := sqlmock.Newx()
@@ -20,7 +20,9 @@ func TestAddCity(t *testing.T) {
 	}
 	defer db.Close()
 
-	r := NewApiPostgres(db)
+	r := NewApiPostgres(db, DbTables{SubscriptionTable: "subscription",
+		WeatherTable:        "weather",
+		WeatherArchiveTable: "weather_archive"})
 
 	type args struct {
 		city             string
@@ -39,13 +41,13 @@ func TestAddCity(t *testing.T) {
 				mock.ExpectBegin()
 
 				mock.ExpectExec("INSERT INTO subscription").
-					WithArgs("Moscow", randomDate).WillReturnResult(sqlmock.NewResult(0, 1))
+					WithArgs("Moscow", RandomDate).WillReturnResult(sqlmock.NewResult(0, 1))
 
 				mock.ExpectCommit()
 			},
 			input: args{
 				city:             "Moscow",
-				subscriptionDate: randomDate,
+				subscriptionDate: RandomDate,
 			},
 		},
 	}
@@ -73,7 +75,9 @@ func TestGetAvgTempByCityId(t *testing.T) {
 	}
 	defer db.Close()
 
-	r := NewApiPostgres(db)
+	r := NewApiPostgres(db, DbTables{SubscriptionTable: "subscription",
+		WeatherTable:        "weather",
+		WeatherArchiveTable: "weather_archive"})
 
 	type args struct {
 		id int
@@ -92,7 +96,7 @@ func TestGetAvgTempByCityId(t *testing.T) {
 				rows := sqlmock.NewRows([]string{"weather"}).
 					AddRow(15.0)
 
-				mock.ExpectQuery("SELECT AVG from weather WHERE (.+)").WithArgs("2").WillReturnRows(rows)
+				mock.ExpectQuery("SELECT AVG(weather) from weather WHERE (.+)").WithArgs(2).WillReturnRows(rows)
 
 			},
 			input: args{
@@ -105,7 +109,7 @@ func TestGetAvgTempByCityId(t *testing.T) {
 			mock: func() {
 				rows := sqlmock.NewRows([]string{"id"})
 
-				mock.ExpectQuery("SELECT AVG(weather) from weather WHERE (.+)").WithArgs("city2").WillReturnRows(rows)
+				mock.ExpectQuery("SELECT AVG(weather) from weather WHERE WHERE (.+)").WithArgs("404").WillReturnRows(rows)
 
 			},
 			input: args{
@@ -137,7 +141,9 @@ func TestGetSubscriptionList(t *testing.T) {
 	}
 	defer db.Close()
 
-	r := NewApiPostgres(db)
+	r := NewApiPostgres(db, DbTables{SubscriptionTable: "subscription",
+		WeatherTable:        "weather",
+		WeatherArchiveTable: "weather_archive"})
 
 	tests := []struct {
 		name    string
@@ -149,16 +155,16 @@ func TestGetSubscriptionList(t *testing.T) {
 			name: "Ok",
 			mock: func() {
 				rows := sqlmock.NewRows([]string{"id", "city", "subscription_date"}).
-					AddRow(1, "city1", randomDate).
-					AddRow(2, "city2", randomDate).
-					AddRow(3, "city3", randomDate)
+					AddRow(1, "city1", RandomDate).
+					AddRow(2, "city2", RandomDate).
+					AddRow(3, "city3", RandomDate)
 
 				mock.ExpectQuery("SELECT (.+) FROM subscription").WillReturnRows(rows)
 			},
 			want: []weather.Subscription{
-				{1, "city1", randomDate},
-				{2, "city2", randomDate},
-				{3, "city3", randomDate},
+				{1, "city1", RandomDate},
+				{2, "city2", RandomDate},
+				{3, "city3", RandomDate},
 			},
 		},
 	}
@@ -185,7 +191,9 @@ func TestMoveOldDataToArchive(t *testing.T) {
 	}
 	defer db.Close()
 
-	r := NewApiPostgres(db)
+	r := NewApiPostgres(db, DbTables{SubscriptionTable: "subscription",
+		WeatherTable:        "weather",
+		WeatherArchiveTable: "weather_archive"})
 
 	type args struct {
 		dateForDelete time.Time
@@ -201,11 +209,11 @@ func TestMoveOldDataToArchive(t *testing.T) {
 			mock: func() {
 				mock.ExpectBegin()
 				mock.ExpectExec("WITH moved_rows AS (DELETE FROM weather WHERE (.+) RETURNING (.+)) INSERT INTO weather_archive SELECT * FROM moved_rows").
-					WithArgs(randomDate).WillReturnResult(sqlmock.NewResult(0, 1))
+					WithArgs(RandomDate).WillReturnResult(sqlmock.NewResult(0, 1))
 				mock.ExpectCommit()
 			},
 			input: args{
-				dateForDelete: randomDate,
+				dateForDelete: RandomDate,
 			},
 		},
 	}
@@ -232,7 +240,9 @@ func TestCityId(t *testing.T) {
 	}
 	defer db.Close()
 
-	r := NewApiPostgres(db)
+	r := NewApiPostgres(db, DbTables{SubscriptionTable: "subscription",
+		WeatherTable:        "weather",
+		WeatherArchiveTable: "weather_archive"})
 
 	type args struct {
 		city string
@@ -296,7 +306,9 @@ func TestAddWeatherByCityId(t *testing.T) {
 	}
 	defer db.Close()
 
-	r := NewApiPostgres(db)
+	r := NewApiPostgres(db, DbTables{SubscriptionTable: "subscription",
+		WeatherTable:        "weather",
+		WeatherArchiveTable: "weather_archive"})
 
 	type args struct {
 		id          int
@@ -316,13 +328,13 @@ func TestAddWeatherByCityId(t *testing.T) {
 				mock.ExpectBegin()
 
 				mock.ExpectExec("INSERT INTO weather").
-					WithArgs(1, randomDate, 18).WillReturnResult(sqlmock.NewResult(0, 1))
+					WithArgs(1, RandomDate, 18).WillReturnResult(sqlmock.NewResult(0, 1))
 
 				mock.ExpectCommit()
 			},
 			input: args{
 				id:          1,
-				date:        randomDate,
+				date:        RandomDate,
 				temperature: 18,
 			},
 		},
@@ -332,13 +344,13 @@ func TestAddWeatherByCityId(t *testing.T) {
 				mock.ExpectBegin()
 
 				mock.ExpectExec("INSERT INTO weather").
-					WithArgs(404, randomDate, 404).WillReturnError(errors.New("not found"))
+					WithArgs(404, RandomDate, 404).WillReturnError(errors.New("not found"))
 
 				mock.ExpectRollback()
 			},
 			input: args{
 				id:          404,
-				date:        randomDate,
+				date:        RandomDate,
 				temperature: 404,
 			},
 			wantErr: true,
@@ -368,7 +380,9 @@ func TestDeleteCityById(t *testing.T) {
 	}
 	defer db.Close()
 
-	r := NewApiPostgres(db)
+	r := NewApiPostgres(db, DbTables{SubscriptionTable: "subscription",
+		WeatherTable:        "weather",
+		WeatherArchiveTable: "weather_archive"})
 
 	type args struct {
 		id int
