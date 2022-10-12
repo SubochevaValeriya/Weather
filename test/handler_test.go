@@ -30,6 +30,7 @@ func TestGetAverageTemperatureDefunctCity(t *testing.T) {
 }
 
 func TestGetAverageTemperature(t *testing.T) {
+	t.Parallel()
 	var avgTemp int
 
 	err := unitTest.TestHandlerUnMarshalResp(utils.GET, "/weather/Moscow", "FORM", nil, &avgTemp)
@@ -85,6 +86,7 @@ func TestGetSubscriptionListIfCityInTheList(t *testing.T) {
 }
 
 func TestAddNewCity(t *testing.T) {
+	t.Parallel()
 	var cityResponse handler.CityResponse
 	var input = weather.City{
 		City: "Oludeniz",
@@ -105,6 +107,7 @@ func TestAddNewCity(t *testing.T) {
 }
 
 func TestDeleteCity(t *testing.T) {
+	t.Parallel()
 	var statusResponse handler.StatusResponse
 
 	err := unitTest.TestHandlerUnMarshalResp(utils.DELETE, "/weather/Moscow", "json", nil, &statusResponse)
@@ -146,6 +149,7 @@ func TestAddCityThatAlreadyInSubscription(t *testing.T) {
 }
 
 func TestAddDefunctCity(t *testing.T) {
+	t.Parallel()
 	var cityResponse handler.CityResponse
 	var input = weather.City{
 		City: "IAmNotCity",
@@ -170,6 +174,7 @@ func TestAddDefunctCity(t *testing.T) {
 }
 
 func TestDeleteNotCity(t *testing.T) {
+	t.Parallel()
 	var statusResponse handler.StatusResponse
 
 	err := unitTest.TestHandlerUnMarshalResp(utils.DELETE, "/weather/notcity", "json", nil, &statusResponse)

@@ -61,7 +61,6 @@ func TestMain(m *testing.M) {
 	openWeatherAPI := openWeatherApi.NewOpenWeather(openWeather)
 	services := service.NewService(repos, openWeatherAPI)
 	handlers := handler.NewHandler(services)
-	//srv := new(weather.Server)
 
 	router := handlers.InitRoutes()
 	unitTest.SetRouter(router)
@@ -70,8 +69,6 @@ func TestMain(m *testing.M) {
 
 	createSchema(db)
 	addDataToDatabase(db)
-	// replaced package DB to our mock DB
-	//postgres.DB = db
 
 	log.Println("Database setup for test")
 	exitVal := m.Run()
