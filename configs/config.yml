@@ -13,3 +13,8 @@ periodicity: 600
 openWeatherMap:
   unit: "C"
   lang: "en"
+
+dbTables:
+  subscription: subscription
+  weather: weather
+  weather_archive: weather_archive
