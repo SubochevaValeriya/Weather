@@ -1,0 +1,20 @@
+port: "8000"
+
+db:
+  username: "postgres"
+  host: "localhost"
+  port: "5432"
+  dbname: "postgres"
+  sslmode: "disable"
+
+cntDayArchive: 3
+periodicity: 600
+
+openWeatherMap:
+  unit: "C"
+  lang: "en"
+
+dbTables:
+    subscription: subscription_test
+    weather: weather_test
+    weather_archive: weather_archive_test
