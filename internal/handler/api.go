@@ -48,7 +48,7 @@ func (h *Handler) addCity(c *gin.Context) {
 // @ID get-subscription-list
 // @Accept  json
 // @Produce  json
-// @Success 200 {object} getSubscriptionListResponse
+// @Success 200 {object} GetSubscriptionListResponse
 // @Failure 400,404 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Failure default {object} ErrorResponse
