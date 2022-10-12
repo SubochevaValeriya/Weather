@@ -154,14 +154,3 @@ func addDataToDatabase(db *sqlx.DB) error {
 
 	return tx.Commit()
 }
-
-//func clearDatabase(db *sqlx.DB) {
-//	schema := `DROP TABLE weather_test;
-//
-//	DROP TABLE weather_archive_test;
-//
-//	DROP TABLE subscription_test;`
-//
-//	db.MustExec(schema)
-//	return nil
-//}
