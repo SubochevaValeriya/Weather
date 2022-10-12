@@ -9,7 +9,7 @@ import (
 type Weather interface {
 	AddCity(city string) error
 	GetSubscriptionList() ([]weather.Subscription, error)
-	GetAvgTempByCity(city string) (float64, error)
+	GetAvgTempByCity(city string) (int, error)
 	DeleteCity(city string) error
 	AddWeather(city string) error
 }

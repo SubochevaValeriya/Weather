@@ -15,6 +15,6 @@ openWeatherMap:
   lang: "en"
 
 dbTables:
-  subscription: subscription
-  weather: weather
-  weather_archive: weather_archive
+    subscription: subscription_test
+    weather: weather_test
+    weather_archive: weather_archive_test

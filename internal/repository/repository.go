@@ -20,6 +20,6 @@ type Repository struct {
 	Weather
 }
 
-func NewRepository(db *sqlx.DB) *Repository {
-	return &Repository{NewApiPostgres(db)}
+func NewRepository(db *sqlx.DB, dbTables DbTables) *Repository {
+	return &Repository{NewApiPostgres(db, dbTables)}
 }
