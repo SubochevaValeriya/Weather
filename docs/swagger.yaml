@@ -1,23 +1,23 @@
 basePath: /
 definitions:
-  handler.cityResponse:
+  handler.CityResponse:
     properties:
       city:
         type: string
     type: object
-  handler.errorResponse:
+  handler.ErrorResponse:
     properties:
       message:
         type: string
     type: object
-  handler.getSubscriptionListResponse:
+  handler.GetSubscriptionListResponse:
     properties:
       data:
         items:
           $ref: '#/definitions/weather.Subscription'
         type: array
     type: object
-  handler.statusResponse:
+  handler.StatusResponse:
     properties:
       status:
         type: string
@@ -55,23 +55,23 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handler.getSubscriptionListResponse'
+            $ref: '#/definitions/handler.GetSubscriptionListResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.errorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/handler.errorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.errorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         default:
           description: ""
           schema:
-            $ref: '#/definitions/handler.errorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
       summary: Get Subscription List
       tags:
       - weather
@@ -93,23 +93,23 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handler.cityResponse'
+            $ref: '#/definitions/handler.CityResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.errorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/handler.errorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.errorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         default:
           description: ""
           schema:
-            $ref: '#/definitions/handler.errorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
       summary: Add City
       tags:
       - weather
@@ -131,23 +131,23 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handler.statusResponse'
+            $ref: '#/definitions/handler.StatusResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.errorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/handler.errorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.errorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         default:
           description: ""
           schema:
-            $ref: '#/definitions/handler.errorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
       summary: Delete City
       tags:
       - weather
@@ -172,19 +172,19 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.errorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/handler.errorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.errorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         default:
           description: ""
           schema:
-            $ref: '#/definitions/handler.errorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
       summary: Get Avg Temperature By City
       tags:
       - weather
