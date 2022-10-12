@@ -9,11 +9,19 @@ import (
 )
 
 type ApiPostgres struct {
-	db *sqlx.DB
+	db       *sqlx.DB
+	dbTables DbTables
 }
 
-func NewApiPostgres(db *sqlx.DB) *ApiPostgres {
-	return &ApiPostgres{db: db}
+type DbTables struct {
+	SubscriptionTable   string
+	WeatherTable        string
+	WeatherArchiveTable string
+}
+
+func NewApiPostgres(db *sqlx.DB, dbTables DbTables) *ApiPostgres {
+	return &ApiPostgres{db: db,
+		dbTables: dbTables}
 }
 
 func (r *ApiPostgres) AddCity(city string, date time.Time) error {
@@ -22,7 +30,7 @@ func (r *ApiPostgres) AddCity(city string, date time.Time) error {
 		return err
 	}
 
-	addToSubscription := fmt.Sprintf("INSERT INTO %s (city, subscription_date) values ($1, $2)", subscriptionTable)
+	addToSubscription := fmt.Sprintf("INSERT INTO %s (city, subscription_date) values ($1, $2)", r.dbTables.SubscriptionTable)
 	_, err = tx.Exec(addToSubscription, city, date)
 	if err != nil {
 		tx.Rollback()
@@ -35,7 +43,7 @@ func (r *ApiPostgres) AddCity(city string, date time.Time) error {
 func (r *ApiPostgres) GetSubscriptionList() ([]weather.Subscription, error) {
 	var subscription []weather.Subscription
 
-	query := fmt.Sprintf("SELECT * FROM %s", subscriptionTable)
+	query := fmt.Sprintf("SELECT * FROM %s", r.dbTables.SubscriptionTable)
 	err := r.db.Select(&subscription, query)
 
 	return subscription, err
@@ -46,7 +54,7 @@ func (r *ApiPostgres) AddWeatherByCityId(id int, date time.Time, temperature int
 	if err != nil {
 		return err
 	}
-	addWeather := fmt.Sprintf("INSERT INTO %s (city_id, weather_date, weather) values ($1, $2, $3)", weathersTable)
+	addWeather := fmt.Sprintf("INSERT INTO %s (city_id, weather_date, weather) values ($1, $2, $3)", r.dbTables.WeatherTable)
 	_, err = tx.Exec(addWeather, id, date, temperature)
 	if err != nil {
 		tx.Rollback()
@@ -62,14 +70,14 @@ func (r *ApiPostgres) DeleteCityById(id int) error {
 		return err
 	}
 
-	deleteTransactionsQuery := fmt.Sprintf("DELETE FROM %s WHERE city_id = $1", weathersTable)
+	deleteTransactionsQuery := fmt.Sprintf("DELETE FROM %s WHERE city_id = $1", r.dbTables.WeatherTable)
 	if _, err := r.db.Exec(deleteTransactionsQuery, id); err != nil {
 		tx.Rollback()
 		return err
 	}
 
-	deleteBalanceQuery := fmt.Sprintf("DELETE FROM %s WHERE id = $1", subscriptionTable)
-	_, err = tx.Exec(deleteBalanceQuery, id)
+	deleteSubscriptionQuery := fmt.Sprintf("DELETE FROM %s WHERE id = $1", r.dbTables.SubscriptionTable)
+	_, err = tx.Exec(deleteSubscriptionQuery, id)
 	if err != nil {
 		tx.Rollback()
 		return err
@@ -80,7 +88,7 @@ func (r *ApiPostgres) DeleteCityById(id int) error {
 
 func (r *ApiPostgres) GetCityId(city string) (int, error) {
 	var id int
-	getCityIdQuery := fmt.Sprintf("SELECT id from %s WHERE city=$1", subscriptionTable)
+	getCityIdQuery := fmt.Sprintf("SELECT id from %s WHERE city=$1", r.dbTables.SubscriptionTable)
 	err := r.db.Get(&id, getCityIdQuery, city)
 	if err != nil {
 		return id, err
@@ -91,7 +99,7 @@ func (r *ApiPostgres) GetCityId(city string) (int, error) {
 
 func (r *ApiPostgres) GetAvgTempByCityId(id int) (float64, error) {
 	var avgTemp float64
-	getAvgTemp := fmt.Sprintf("SELECT AVG(weather) FROM %s WHERE city_id=$1", weathersTable)
+	getAvgTemp := fmt.Sprintf("SELECT AVG(weather) FROM %s WHERE city_id=$1", r.dbTables.WeatherTable)
 
 	var avgTempUint8 []uint8
 	err := r.db.Get(&avgTempUint8, getAvgTemp, id)
@@ -111,7 +119,7 @@ func (r *ApiPostgres) MoveOldDataToArchive(dateForDelete time.Time) error {
 	if err != nil {
 		return err
 	}
-	moveOldDataToArchiveQuery := fmt.Sprintf("WITH moved_rows AS (DELETE FROM %s WHERE (weather_date) <= $1 RETURNING *) INSERT INTO %s SELECT * FROM moved_rows", weathersTable, weathersTableArchive)
+	moveOldDataToArchiveQuery := fmt.Sprintf("WITH moved_rows AS (DELETE FROM %s WHERE (weather_date) <= $1 RETURNING *) INSERT INTO %s SELECT * FROM moved_rows", r.dbTables.WeatherTable, r.dbTables.WeatherArchiveTable)
 	if _, err := r.db.Exec(moveOldDataToArchiveQuery, dateForDelete); err != nil {
 		tx.Rollback()
 		return err

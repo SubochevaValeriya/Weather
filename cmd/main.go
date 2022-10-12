@@ -34,8 +34,10 @@ func main() {
 		logrus.Fatalf("error loading env variables: %s", err.Error())
 	}
 
+	//connect w/t docker-compose:
 	//sudo docker run --name=weather -e POSTGRES_PASSWORD='qwerty' -p 5432:5432 -d --rm postgres
 	// migrate -path ./schema -database 'postgres://postgres:qwerty@localhost:5432/postgres?sslmode=disable' up
+
 	db, err := repository.NewPostgresDB(repository.Config{
 		Host:     os.Getenv("host"),
 		Port:     viper.GetString("db.port"),
@@ -48,6 +50,10 @@ func main() {
 		logrus.Fatalf("failed to inititalize db: %s", err.Error())
 	}
 
+	dbTables := repository.DbTables{SubscriptionTable: viper.GetString("dbTables.subscription"),
+		WeatherTable:        viper.GetString("dbTables.weather"),
+		WeatherArchiveTable: viper.GetString("dbTables.weather_archive")}
+
 	openWeather, err := openWeatherApi.NewOpenWeatherApiConnection(openWeatherApi.Config{
 		Unit:  viper.GetString("openWeatherMap.unit"),
 		Lang:  viper.GetString("openWeatherMap.lang"),
@@ -55,7 +61,7 @@ func main() {
 	})
 
 	// dependency injection
-	repos := repository.NewRepository(db)
+	repos := repository.NewRepository(db, dbTables)
 	openWeatherAPI := openWeatherApi.NewOpenWeather(openWeather)
 	services := service.NewService(repos, openWeatherAPI)
 	handlers := handler.NewHandler(services)
