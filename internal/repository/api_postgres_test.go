@@ -7,6 +7,7 @@ import (
 	weather "github.com/SubochevaValeriya/microservice-weather"
 	"github.com/stretchr/testify/assert"
 	sqlmock "github.com/zhashkevych/go-sqlxmock"
+	"regexp"
 	"testing"
 	"time"
 )
@@ -14,6 +15,7 @@ import (
 var RandomDate = time.Date(2022, 10, 11, 0, 0, 0, 0, time.UTC)
 
 func TestAddCity(t *testing.T) {
+	t.Parallel()
 	db, mock, err := sqlmock.Newx()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
@@ -69,6 +71,7 @@ func TestAddCity(t *testing.T) {
 }
 
 func TestGetAvgTempByCityId(t *testing.T) {
+	t.Parallel()
 	db, mock, err := sqlmock.Newx()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
@@ -96,7 +99,7 @@ func TestGetAvgTempByCityId(t *testing.T) {
 				rows := sqlmock.NewRows([]string{"weather"}).
 					AddRow(15.0)
 
-				mock.ExpectQuery("SELECT AVG(weather) from weather WHERE (.+)").WithArgs(2).WillReturnRows(rows)
+				mock.ExpectQuery(`SELECT AVG\(weather\) FROM weather WHERE .+`).WithArgs(2).WillReturnRows(rows)
 
 			},
 			input: args{
@@ -107,10 +110,8 @@ func TestGetAvgTempByCityId(t *testing.T) {
 		{
 			name: "Not found",
 			mock: func() {
-				rows := sqlmock.NewRows([]string{"id"})
-
-				mock.ExpectQuery("SELECT AVG(weather) from weather WHERE WHERE (.+)").WithArgs("404").WillReturnRows(rows)
-
+				mock.ExpectQuery(`SELECT AVG\(weather\) FROM weather WHERE .+`).
+					WithArgs(404)
 			},
 			input: args{
 				id: 404,
@@ -124,7 +125,7 @@ func TestGetAvgTempByCityId(t *testing.T) {
 			tt.mock()
 			got, err := r.GetAvgTempByCityId(tt.input.id)
 			if tt.wantErr {
-				assert.Error(t, err)
+				assert.Error(t, err, err)
 			} else {
 				assert.NoError(t, err)
 				assert.Equal(t, tt.want, got)
@@ -185,6 +186,7 @@ func TestGetSubscriptionList(t *testing.T) {
 }
 
 func TestMoveOldDataToArchive(t *testing.T) {
+	regexp.Compile(`WITH moved_rows AS \(DELETE FROM weather WHERE \(weather_date\) <= $1 RETURNING *\) INSERT INTO weather_archive SELECT * FROM moved_rows`)
 	db, mock, err := sqlmock.Newx()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
@@ -208,7 +210,7 @@ func TestMoveOldDataToArchive(t *testing.T) {
 			name: "Ok",
 			mock: func() {
 				mock.ExpectBegin()
-				mock.ExpectExec("WITH moved_rows AS (DELETE FROM weather WHERE (.+) RETURNING (.+)) INSERT INTO weather_archive SELECT * FROM moved_rows").
+				mock.ExpectExec(`WITH moved_rows AS \(DELETE FROM weather WHERE .+ RETURNING \*\) INSERT INTO weather_archive SELECT \* FROM moved_rows`).
 					WithArgs(RandomDate).WillReturnResult(sqlmock.NewResult(0, 1))
 				mock.ExpectCommit()
 			},
@@ -274,7 +276,9 @@ func TestCityId(t *testing.T) {
 			mock: func() {
 				rows := sqlmock.NewRows([]string{"id"})
 
-				mock.ExpectQuery("SELECT id from subscription WHERE (.+)").WithArgs("city2").WillReturnRows(rows)
+				mock.ExpectQuery("SELECT id from subscription WHERE (.+)").
+					WithArgs("city2").
+					WillReturnRows(rows)
 
 			},
 			input: args{
