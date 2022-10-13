@@ -3,13 +3,6 @@ package repository
 import (
 	"fmt"
 	"github.com/jmoiron/sqlx"
-	"os"
-)
-
-var (
-	SubscriptionTable    = os.Getenv("subscription")
-	WeathersTable        = os.Getenv("weather")
-	WeathersTableArchive = os.Getenv("weather_archive")
 )
 
 type Config struct {
