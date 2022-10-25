@@ -1,5 +1,7 @@
 ## A service that receives information about the weather in the cities added to the subscription
 
+**Used:** *Postgres, REST API principles, gin-gonic framework, docker-compose, work with external API, unit testing.*
+
 ### To run an app:
 
 ```
